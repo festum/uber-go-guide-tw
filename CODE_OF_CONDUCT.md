@@ -1,75 +1,51 @@
-# Contributor Covenant Code of Conduct
+# 行為準則
 
-## 誓言
+## 我們的宗旨
 
-In the interest of fostering an open and welcoming environment, we as
-contributors and maintainers pledge to making participation in our project and
-our community a harassment-free experience for everyone, regardless of age, body
-size, disability, ethnicity, sex characteristics, gender identity and expression,
-level of experience, education, socio-economic status, nationality, personal
-appearance, race, religion, or sexual identity and orientation.
-為了營造開放和熱情的環境，作為貢獻/維護者，我們會確保參與我們專案及社群的人不會被騷擾，不論其年齡、
-身材、殘疾、種族、性徵、性別認同、性別表現、性認同、性取向、經驗水準、教育程度、社經地位、國籍、長相
-、種族、宗教。
+在這致力於開放的環境中，我們做為貢獻者與維護者承諾參與我們的專案與社群且保證所有人不因年齡、身體、
+外觀、體型、殘疾、種族、性別、語言、教育程度、國藉、宗教和性向而受到任何的騷擾。
 
-## 準則
+## 我們的標準
 
-創造正向環境的貢獻行為，如下：
+為了創造一個積極貢獻的環境，我們：
 
-* 使用歡迎和包容的講法
-* 尊重不同的觀點和經驗
-* 優雅地接受建設性的批評
-* 關注於對社群好的事物
-* 共情其他社群成員
+- 使用歡迎而包容的語言
+- 尊重各種不同的觀點和經驗
+- 樂意的接受任何有建設性的批評
+- 專注於如何讓社群更好
+- 與社群產生共鳴
 
-無法接受的參與者行為，如下：
+而以下的行為則是不被允許的：
 
-* The use of sexualized language or imagery and unwelcome sexual attention or advances
-* Trolling, insulting/derogatory comments, and personal or political attacks
-* Public or private harassment
-* Publishing others' private information, such as a physical or electronic address, without explicit permission
-* Other conduct which could reasonably be considered inappropriate in a professional setting
+- 使用帶有性暗示的言語或圖像或不受歡迎的性關注
+- 惡意破壞、貶損他人評論與人身攻擊
+- 不論在任何場合的騷擾他人
+- 未經許可的公開其他人的個資，如住址、電郵
+- 任何在一個專業的場合下被合理的認為不應出現的行為
 
-## Our Responsibilities
+## 我們的責任
 
-Project maintainers are responsible for clarifying the standards of acceptable
-behavior and are expected to take appropriate and fair corrective action in
-response to any instances of unacceptable behavior.
+專案維護者負責解釋可接受行為的標準，和對任何不可接受行為採取適當且公平的糾正動作。
 
-Project maintainers have the right and responsibility to remove, edit, or
-reject comments, commits, code, wiki edits, issues, and other contributions
-that are not aligned to this Code of Conduct, or to ban temporarily or
-permanently any contributor for other behaviors that they deem inappropriate,
-threatening, offensive, or harmful.
+專案維護者有權並有責任進行刪除、編輯或拒絕不符合本準則的註解、提交、程式碼、wiki 編輯、issue與其他
+貢獻行為，或是臨時或永久性地禁止那些他們認為犯下不合適、威脅、冒犯或有害行為的貢獻者。
 
-## Scope
+## 效力範圍
 
-This Code of Conduct applies both within project spaces and in public spaces
-when an individual is representing the project or its community. Examples of
-representing a project or community include using an official project e-mail
-address, posting via an official social media account, or acting as an appointed
-representative at an online or offline event. Representation of a project may be
-further defined and clarified by project maintainers.
+這份行為準則適用在專案空間，以及那些在公開場合代表本專案或社群的個體。 代表專案或社群的的例子包含使用
+官方的電子郵件、透過官方社群媒體帳號發表貼文、被指定為在線上或線下活動的代表。 專案的代表可能會由專案
+維護者來進一步定義或解釋。
 
-## Enforcement
+## 執行
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported by contacting the project team at oss-conduct@uber.com. All
-complaints will be reviewed and investigated and will result in a response that
-is deemed necessary and appropriate to the circumstances. The project team is
-obligated to maintain confidentiality with regard to the reporter of an incident.
-Further details of specific enforcement policies may be posted separately.
+可透過電郵 ossconduct@uber.com 向專案團隊聯繫，舉報虐待、騷擾及其他不可接受的行為。所有投訴都將得
+到審查和調查，並會根據情況做出必要和適當的回應。專案團隊有責任對事件的舉報人保密。具體實施政策的更多詳
+細資料會另外可能會單獨發布。
 
-Project maintainers who do not follow or enforce the Code of Conduct in good
-faith may face temporary or permanent repercussions as determined by other
-members of the project's leadership.
+不如實遵守或執行《行為準則》的專案維護者可能會遭專案領導層成員做臨時或永久性仲裁。
 
-## Attribution
+## 來源
 
-This Code of Conduct is adapted from the [Contributor Covenant][homepage], version 1.4,
-available at https://www.contributor-covenant.org/version/1/4/code-of-conduct.html
+本行為準則採自[貢獻者公約](https://contributor-covenant.org/)1.4版，請見 https://www.contributor-covenant.org/version/1/4/code-of-conduct.html
 
-[homepage]: https://www.contributor-covenant.org
-
-For answers to common questions about this code of conduct, see
-https://www.contributor-covenant.org/faq
+關於準則的更多問題與解答請見 https://www.contributor-covenant.org/faq
