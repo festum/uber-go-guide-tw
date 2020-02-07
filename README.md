@@ -1,140 +1,127 @@
 <!--
 
-Editing this document:
+編輯本文件請:
 
-- Discuss all changes in GitHub issues first.
-- Update the table of contents as new sections are added or removed.
-- Use tables for side-by-side code samples. See below.
+- 先在GitHub Issue中討論所有的變更。
+- 如有區塊異動請更新目錄.
+- 請在程式範例中用HTML表格呈現，如下:
 
-Code Samples:
+程式範例:
 
-Use 2 spaces to indent. Horizontal real estate is important in side-by-side
-samples.
-
-For side-by-side code samples, use the following snippet.
+縮排用兩個空格。注意將敘述放同一行，請參考以下片段:
 
 ~~~
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>錯</th><th>對</th></tr></thead>
 <tbody>
 <tr><td>
 
 ```go
-BAD CODE GOES HERE
+錯誤的程式範例
 ```
 
 </td><td>
 
 ```go
-GOOD CODE GOES HERE
+正確的程式範例
 ```
 
 </td></tr>
 </tbody></table>
 ~~~
 
-(You need the empty lines between the <td> and code samples for it to be
-treated as Markdown.)
+(在<td>與程式範例間要有空行以markdown來呈現)
 
-If you need to add labels or descriptions below the code samples, add another
-row before the </tbody></table> line.
+想在程式範例下新增標籤或敘述就加一行在</tbody></table>前。
 
 ~~~
 <tr>
-<td>DESCRIBE BAD CODE</td>
-<td>DESCRIBE GOOD CODE</td>
+<td>錯誤範例的敘述</td>
+<td>正確範例的敘述</td>
 </tr>
 ~~~
 
 -->
 
-# Uber Go Style Guide
+# [Uber風格指南](https://github.com/festum/uber-go-guide-tw)([English](https://github.com/uber-go/guide))
 
-## Table of Contents
+## 目錄
 
-- [Introduction](#introduction)
-- [Guidelines](#guidelines)
-  - [Pointers to Interfaces](#pointers-to-interfaces)
-  - [Receivers and Interfaces](#receivers-and-interfaces)
-  - [Zero-value Mutexes are Valid](#zero-value-mutexes-are-valid)
-  - [Copy Slices and Maps at Boundaries](#copy-slices-and-maps-at-boundaries)
-  - [Defer to Clean Up](#defer-to-clean-up)
-  - [Channel Size is One or None](#channel-size-is-one-or-none)
-  - [Start Enums at One](#start-enums-at-one)
-  - [Error Types](#error-types)
-  - [Error Wrapping](#error-wrapping)
-  - [Handle Type Assertion Failures](#handle-type-assertion-failures)
-  - [Don't Panic](#dont-panic)
-  - [Use go.uber.org/atomic](#use-gouberorgatomic)
-  - [Avoid Mutable Globals](#avoid-mutable-globals)
-- [Performance](#performance)
-  - [Prefer strconv over fmt](#prefer-strconv-over-fmt)
-  - [Avoid string-to-byte conversion](#avoid-string-to-byte-conversion)
-  - [Prefer Specifying Map Capacity Hints](#prefer-specifying-map-capacity-hints)
-- [Style](#style)
-  - [Be Consistent](#be-consistent)
-  - [Group Similar Declarations](#group-similar-declarations)
-  - [Import Group Ordering](#import-group-ordering)
-  - [Package Names](#package-names)
-  - [Function Names](#function-names)
-  - [Import Aliasing](#import-aliasing)
-  - [Function Grouping and Ordering](#function-grouping-and-ordering)
-  - [Reduce Nesting](#reduce-nesting)
-  - [Unnecessary Else](#unnecessary-else)
-  - [Top-level Variable Declarations](#top-level-variable-declarations)
-  - [Prefix Unexported Globals with _](#prefix-unexported-globals-with-_)
-  - [Embedding in Structs](#embedding-in-structs)
-  - [Use Field Names to Initialize Structs](#use-field-names-to-initialize-structs)
-  - [Local Variable Declarations](#local-variable-declarations)
-  - [nil is a valid slice](#nil-is-a-valid-slice)
-  - [Reduce Scope of Variables](#reduce-scope-of-variables)
-  - [Avoid Naked Parameters](#avoid-naked-parameters)
+- [介紹](#介紹)
+- [指南](#指南)
+  - [指標介面](#指標介面)
+  - [接收器和介面](#接收器和介面)
+  - [給互斥鎖零值是對的](#給互斥鎖零值是對的)
+  - [在邊界複製Slices跟Maps](#在邊界複製slices跟maps)
+  - [用Defer做整理](#用defer做整理)
+  - [Channel的大小只用1或None](#channel的大小只用1或none)
+  - [Enums用1起跳](#start-enums-at-one)
+  - [用`"time"`處理時間](#use-time-to-handle-time)
+  - [Error型別](#error型別)
+  - [Error包裝](#error包裝)
+  - [處理Type Assertion失敗的方式](#處理type-assertion失敗的方式)
+  - [不要用Panic](#不要用panic)
+  - [用go.uber.org/atomic](#用gouberorgatomic)
+  - [避用全域變數](#避用全域變數)
+  - [避免在公開的結構中嵌入型別](#避免在公開的結構中嵌入型別)
+- [效能](#效能)
+  - [多用strconv替代fmt](#多用strconv替代fmt)
+  - [避免字串直接轉byte](#避免字串直接轉byte)
+  - [多用指定Map容量的提示](#多用指定map容量的提示)
+- [樣式](#樣式)
+  - [維持一致](#維持一致)
+  - [類似宣告放一起](#類似宣告放一起)
+  - [匯入群組排序](#匯入群組排序)
+  - [套件命名](#套件命名)
+  - [函式命名](#函式命名)
+  - [匯入別名](#匯入別名)
+  - [函式的分群與排序](#函式的分群與排序)
+  - [減少堆集](#減少堆集)
+  - [非必要的Else](#非必要的Else)
+  - [頂級變數宣告](#頂級變數宣告)
+  - [建議將不公開的全域變數或常數前面加底線](#建議將不公開的全域變數或常數前面加底線)
+  - [結構中做嵌入](#結構中做嵌入)
+  - [用欄位名來初始結構](#用欄位名來初始結構)
+  - [區域的變數宣告](#區域的變數宣告)
+  - [nil是正確的slice](#nil是正確的slice)
+  - [減少變數的作用範圍](#減少變數的作用範圍)
+  - [多用參數名稱](#多用參數名稱)
   - [Use Raw String Literals to Avoid Escaping](#use-raw-string-literals-to-avoid-escaping)
-  - [Initializing Struct References](#initializing-struct-references)
-  - [Initializing Maps](#initializing-maps)
-  - [Format Strings outside Printf](#format-strings-outside-printf)
-  - [Naming Printf-style Functions](#naming-printf-style-functions)
-- [Patterns](#patterns)
-  - [Test Tables](#test-tables)
-  - [Functional Options](#functional-options)
+  - [初始結構參照](#初始結構參照)
+  - [初始 Maps](#initializing-maps)
+  - [不要在Printf內調整字串格式](#不要在printf內調整字串格式)
+  - [Printf樣式的函式命名](#printf樣式的函式命名)
+- [模式](#模式)
+  - [測試表](#測試表)
+  - [功能性選項](#功能性選項)
 
-## Introduction
+## 介紹
 
-Styles are the conventions that govern our code. The term style is a bit of a
-misnomer, since these conventions cover far more than just source file
-formatting—gofmt handles that for us.
+樣式(style)是支配我們程式碼的慣例。術語**樣式**有點用詞不當，因為涵蓋範圍不限於gofmt處理的格式。
 
-The goal of this guide is to manage this complexity by describing in detail the
-Dos and Don'ts of writing Go code at Uber. These rules exist to keep the code
-base manageable while still allowing engineers to use Go language features
-productively.
+指南的存在是為簡化專案管理，並讓工程師更有效地使用Go的功能。
 
-This guide was originally created by [Prashant Varanasi] and [Simon Newton] as
-a way to bring some colleagues up to speed with using Go. Over the years it has
-been amended based on feedback from others.
+該指南最初由[Prashant Varanasi]和[Simon Newton]撰寫，目的讓同事能快速入手Go。指南多年來已根據其他人的意見進行修繕。
 
   [Prashant Varanasi]: https://github.com/prashantv
   [Simon Newton]: https://github.com/nomis52
 
-This documents idiomatic conventions in Go code that we follow at Uber. A lot
-of these are general guidelines for Go, while others extend upon external
-resources:
+本文件記錄在Uber對Go程式碼遵循的慣用約定。大部分是Go的通用規範，其他延伸部份是參考以下文件:
 
-1. [Effective Go](https://golang.org/doc/effective_go.html)
-2. [The Go common mistakes guide](https://github.com/golang/go/wiki/CodeReviewComments)
+1. [Go高能]（https://golang.org/doc/effective_go.html）
+2. [Go常見錯誤指南]（https://github.com/golang/go/wiki/CodeReviewComments）
 
-All code should be error-free when run through `golint` and `go vet`. We
-recommend setting up your editor to:
+所有程式碼都用`golint`和`go vet`偵錯並完全通過測試。建議在編輯器綁定自動檢查：
 
-- Run `goimports` on save
-- Run `golint` and `go vet` to check for errors
+- 儲存時執行`goimports`
+- 執行`golint`和`go vet`偵錯
 
-You can find information in editor support for Go tools here:
+更多詳細資訊請見Go編輯器支援頁:
 <https://github.com/golang/go/wiki/IDEsAndTextEditorPlugins>
 
-## Guidelines
+## 指南
 
-### Pointers to Interfaces
+### 指標介面
 
 You almost never need a pointer to an interface. You should be passing
 interfaces as values—the underlying data can still be a pointer.
@@ -149,7 +136,7 @@ An interface is two fields:
 If you want interface methods to modify the underlying data, you must use a
 pointer.
 
-### Receivers and Interfaces
+### 接收器和介面
 
 Methods with value receivers can be called on pointers as well as values.
 
@@ -217,7 +204,7 @@ Effective Go has a good write up on [Pointers vs. Values].
 
   [Pointers vs. Values]: https://golang.org/doc/effective_go.html#pointers_vs_values
 
-### Zero-value Mutexes are Valid
+### 給互斥鎖零值是對的
 
 The zero-value of `sync.Mutex` and `sync.RWMutex` is valid, so you almost
 never need a pointer to a mutex.
@@ -545,6 +532,175 @@ const (
 // LogToStdout=0, LogToFile=1, LogToRemote=2
 ```
 
+### Use `"time"` to handle time
+
+Time is complicated. Incorrect assumptions often made about time include the
+following.
+
+1. A day has 24 hours
+2. An hour has 60 minutes
+3. A week has 7 days
+4. A year has 365 days
+5. [And a lot more](https://infiniteundo.com/post/25326999628/falsehoods-programmers-believe-about-time)
+
+For example, *1* means that adding 24 hours to a time instant will not always
+yield a new calendar day.
+
+Therefore, always use the [`"time"`] package when dealing with time because it
+helps deal with these incorrect assumptions in a safer, more accurate manner.
+
+  [`"time"`]: https://golang.org/pkg/time/
+
+#### Use `time.Time` for instants of time
+
+Use [`time.Time`] when dealing with instants of time, and the methods on
+`time.Time` when comparing, adding, or subtracting time.
+
+  [`time.Time`]: https://golang.org/pkg/time/#Time
+
+<table>
+<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<tbody>
+<tr><td>
+
+```go
+func isActive(now, start, stop int) bool {
+  return start <= now && now < stop
+}
+```
+
+</td><td>
+
+```go
+func isActive(now, start, stop time.Time) bool {
+  return (start.Before(now) || start.Equal(now)) && now.Before(stop)
+}
+```
+
+</td></tr>
+</tbody></table>
+
+#### Use `time.Duration` for periods of time
+
+Use [`time.Duration`] when dealing with periods of time.
+
+  [`time.Duration`]: https://golang.org/pkg/time/#Duration
+
+<table>
+<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<tbody>
+<tr><td>
+
+```go
+func poll(delay int) {
+  for {
+    // ...
+    time.Sleep(time.Duration(delay) * time.Millisecond)
+  }
+}
+
+poll(10) // was it seconds or milliseconds?
+```
+
+</td><td>
+
+```go
+func poll(delay time.Duration) {
+  for {
+    // ...
+    time.Sleep(delay)
+  }
+}
+
+poll(10*time.Second)
+```
+
+</td></tr>
+</tbody></table>
+
+Going back to the example of adding 24 hours to a time instant, the method we
+use to add time depends on intent. If we want the same time of the day, but on
+the next calendar day, we should use [`Time.AddDate`]. However, if we want an
+instant of time guaranteed to be 24 hours after the previous time, we should
+use [`Time.Add`].
+
+  [`Time.AddDate`]: https://golang.org/pkg/time/#Time.AddDate
+  [`Time.Add`]: https://golang.org/pkg/time/#Time.Add
+
+```go
+newDay := t.AddDate(0 /* years */, 0, /* months */, 1 /* days */)
+maybeNewDay := t.Add(24 * time.Hour)
+```
+
+#### Use `time.Time` and `time.Duration` with external systems
+
+Use `time.Duration` and `time.Time` in interactions with external systems when
+possible. For example:
+
+- Command-line flags: [`flag`] supports `time.Duration` via
+  [`time.ParseDuration`]
+- JSON: [`encoding/json`] supports encoding `time.Time` as an [RFC 3339]
+  string via its [`UnmarshalJSON` method]
+- SQL: [`database/sql`] supports converting `DATETIME` or `TIMESTAMP` columns
+  into `time.Time` and back if the underlying driver supports it
+- YAML: [`gopkg.in/yaml.v2`] supports `time.Time` as an [RFC 3339] string, and
+  `time.Duration` via [`time.ParseDuration`].
+
+  [`flag`]: https://golang.org/pkg/flag/
+  [`time.ParseDuration`]: https://golang.org/pkg/time/#ParseDuration
+  [`encoding/json`]: https://golang.org/pkg/encoding/json/
+  [RFC 3339]: https://tools.ietf.org/html/rfc3339
+  [`UnmarshalJSON` method]: https://golang.org/pkg/time/#Time.UnmarshalJSON
+  [`database/sql`]: https://golang.org/pkg/database/sql/
+  [`gopkg.in/yaml.v2`]: https://godoc.org/gopkg.in/yaml.v2
+
+When it is not possible to use `time.Duration` in these interactions, use
+`int` or `float64` and include the unit in the name of the field.
+
+For example, since `encoding/json` does not support `time.Duration`, the unit
+is included in the name of the field.
+
+<table>
+<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<tbody>
+<tr><td>
+
+```go
+// {"interval": 2}
+type Config struct {
+  Interval int `json:"interval"`
+}
+```
+
+</td><td>
+
+```go
+// {"intervalMillis": 2000}
+type Config struct {
+  IntervalMillis int `json:"intervalMillis"`
+}
+```
+
+</td></tr>
+</tbody></table>
+
+When it is not possible to use `time.Time` in these interactions, unless an
+alternative is agreed upon, use `string` and format timestamps as defined in
+[RFC 3339]. This format is used by default by [`Time.UnmarshalText`] and is
+available for use in `Time.Format` and `time.Parse` via [`time.RFC3339`].
+
+  [`Time.UnmarshalText`]: https://golang.org/pkg/time/#Time.UnmarshalText
+  [`time.RFC3339`]: https://golang.org/pkg/time/#RFC3339
+
+Although this tends to not be a problem in practice, keep in mind that the
+`"time"` package does not support parsing timestamps with leap seconds
+([8728]), nor does it account for leap seconds in calculations ([15190]). If
+you compare two instants of time, the difference will not include the leap
+seconds that may have occurred between those two instants.
+
+  [8728]: https://github.com/golang/go/issues/8728
+  [15190]: https://github.com/golang/go/issues/15190
+
 <!-- TODO: section on String methods for enums -->
 
 ### Error Types
@@ -638,7 +794,7 @@ func open(file string) error {
 }
 
 func use() {
-  if err := open(); err != nil {
+  if err := open("testfile.txt"); err != nil {
     if strings.Contains(err.Error(), "not found") {
       // handle
     } else {
@@ -664,7 +820,7 @@ func open(file string) error {
 }
 
 func use() {
-  if err := open(); err != nil {
+  if err := open("testfile.txt"); err != nil {
     if _, ok := err.(errNotFound); ok {
       // handle
     } else {
@@ -1041,6 +1197,139 @@ func TestSigner(t *testing.T) {
 
 </td></tr>
 </tbody></table>
+
+### Avoid Embedding Types in Public Structs
+
+These embedded types leak implementation details, inhibit type evolution, and
+obscure documentation.
+
+Assuming you have implemented a variety of list types using a shared
+`AbstractList`, avoid embedding the `AbstractList` in your concrete list
+implementations.
+Instead, hand-write only the methods to your concrete list that will delegate
+to the abstract list.
+
+```go
+type AbstractList struct {}
+
+// Add adds an entity to the list.
+func (l *AbstractList) Add(e Entity) {
+  // ...
+}
+
+// Remove removes an entity from the list.
+func (l *AbstractList) Remove(e Entity) {
+  // ...
+}
+```
+
+<table>
+<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<tbody>
+<tr><td>
+
+```go
+// ConcreteList is a list of entities.
+type ConcreteList struct {
+  *AbstractList
+}
+```
+
+</td><td>
+
+```go
+// ConcreteList is a list of entities.
+type ConcreteList struct {
+  list *AbstractList
+}
+
+// Add adds an entity to the list.
+func (l *ConcreteList) Add(e Entity) {
+  return l.list.Add(e)
+}
+
+// Remove removes an entity from the list.
+func (l *ConcreteList) Remove(e Entity) {
+  return l.list.Remove(e)
+}
+```
+
+</td></tr>
+</tbody></table>
+
+Go allows [type embedding] as a compromise between inheritance and composition.
+The outer type gets implicit copies of the embedded type's methods.
+These methods, by default, delegate to the same method of the embedded
+instance.
+
+  [type embedding]: https://golang.org/doc/effective_go.html#embedding
+
+The struct also gains a field by the same name as the type.
+So, if the embedded type is public, the field is public.
+To maintain backward compatibility, every future version of the outer type must
+keep the embedded type.
+
+An embedded type is rarely necessary.
+It is a convenience that helps you avoid writing tedious delegate methods.
+
+Even embedding a compatible AbstractList *interface*, instead of the struct,
+would offer the developer more flexibility to change in the future, but still
+leak the detail that the concrete lists use an abstract implementation.
+
+<table>
+<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<tbody>
+<tr><td>
+
+```go
+// AbstractList is a generalized implementation
+// for various kinds of lists of entities.
+type AbstractList interface {
+  Add(Entity)
+  Remove(Entity)
+}
+
+// ConcreteList is a list of entities.
+type ConcreteList struct {
+  AbstractList
+}
+```
+
+</td><td>
+
+```go
+// ConcreteList is a list of entities.
+type ConcreteList struct {
+  list *AbstractList
+}
+
+// Add adds an entity to the list.
+func (l *ConcreteList) Add(e Entity) {
+  return l.list.Add(e)
+}
+
+// Remove removes an entity from the list.
+func (l *ConcreteList) Remove(e Entity) {
+  return l.list.Remove(e)
+}
+```
+
+</td></tr>
+</tbody></table>
+
+Either with an embedded struct or an embedded interface, the embedded type
+places limits on the evolution of the type.
+
+- Adding methods to an embedded interface is a breaking change.
+- Removing methods from an embedded struct is a breaking change.
+- Removing the embedded type is a breaking change.
+- Replacing the embedded type, even with an alternative that satisfies the same
+  interface, is a breaking change.
+
+Although writing these delegate methods is tedious, the additional effort hides
+an implementation detail, leaves more opportunities for change, and also
+eliminates indirection for discovering the full List interface in
+documentation.
 
 ## Performance
 
@@ -2333,62 +2622,116 @@ more arguments on those functions.
 ```go
 // package db
 
-func Connect(
+func Open(
   addr string,
-  timeout time.Duration,
-  caching bool,
+  cache bool,
+  logger *zap.Logger
 ) (*Connection, error) {
   // ...
 }
-
-// Timeout and caching must always be provided,
-// even if the user wants to use the default.
-
-db.Connect(addr, db.DefaultTimeout, db.DefaultCaching)
-db.Connect(addr, newTimeout, db.DefaultCaching)
-db.Connect(addr, db.DefaultTimeout, false /* caching */)
-db.Connect(addr, newTimeout, false /* caching */)
 ```
 
 </td><td>
 
 ```go
-type options struct {
-  timeout time.Duration
-  caching bool
+// package db
+
+type Option interface {
+  // ...
 }
 
-// Option overrides behavior of Connect.
+func WithCache(c bool) Option {
+  // ...
+}
+
+func WithLogger(log *zap.Logger) Option {
+  // ...
+}
+
+// Open creates a connection.
+func Open(
+  addr string,
+  opts ...Option,
+) (*Connection, error) {
+  // ...
+}
+```
+
+</td></tr>
+<tr><td>
+
+The cache and logger parameters must always be provided, even if the user
+wants to use the default.
+
+```go
+db.Open(addr, db.DefaultCache, zap.NewNop())
+db.Open(addr, db.DefaultCache, log)
+db.Open(addr, false /* cache */, zap.NewNop())
+db.Open(addr, false /* cache */, log)
+```
+
+</td><td>
+
+Options are provided only if needed.
+
+```go
+db.Open(addr)
+db.Open(addr, db.WithLogger(log))
+db.Open(addr, db.WithCache(false))
+db.Open(
+  addr,
+  db.WithCache(false),
+  db.WithLogger(log),
+)
+```
+
+</td></tr>
+</tbody></table>
+
+Our suggested way of implementing this pattern is with an `Option` interface
+that holds an unexported method, recording options on an unexported `options`
+struct.
+
+```go
+type options struct {
+  cache  bool
+  logger *zap.Logger
+}
+
 type Option interface {
   apply(*options)
 }
 
-type optionFunc func(*options)
+type cacheOption bool
 
-func (f optionFunc) apply(o *options) {
-  f(o)
+func (c cacheOption) apply(opts *options) {
+  opts.cache = bool(c)
 }
 
-func WithTimeout(t time.Duration) Option {
-  return optionFunc(func(o *options) {
-    o.timeout = t
-  })
+func WithCache(c bool) Option {
+  return cacheOption(c)
 }
 
-func WithCaching(cache bool) Option {
-  return optionFunc(func(o *options) {
-    o.caching = cache
-  })
+type loggerOption struct {
+  Log *zap.Logger
 }
 
-// Connect creates a connection.
-func Connect(
+func (l loggerOption) apply(opts *options) {
+  opts.logger = l.Log
+}
+
+func WithLogger(log *zap.Logger) Option {
+  return loggerOption{Log: log}
+}
+
+// Open creates a connection.
+func Open(
   addr string,
   opts ...Option,
 ) (*Connection, error) {
   options := options{
-    timeout: defaultTimeout,
-    caching: defaultCaching,
+    cache:  defaultCache,
+    logger: zap.NewNop(),
   }
 
   for _, o := range opts {
@@ -2397,21 +2740,15 @@ func Connect(
 
   // ...
 }
-
-// Options must be provided only if needed.
-
-db.Connect(addr)
-db.Connect(addr, db.WithTimeout(newTimeout))
-db.Connect(addr, db.WithCaching(false))
-db.Connect(
-  addr,
-  db.WithCaching(false),
-  db.WithTimeout(newTimeout),
-)
 ```
 
-</td></tr>
-</tbody></table>
+Note that there's a method of implementing this pattern with closures but we
+believe that the pattern above provides more flexibility for authors and is
+easier to debug and test for users. In particular, it allows options to be
+compared against each other in tests and mocks, versus closures where this is
+impossible. Further, it lets options implement other interfaces, including
+`fmt.Stringer` which allows for user-readable string representations of the
+options.
 
 See also,
 
