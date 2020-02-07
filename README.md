@@ -12,18 +12,18 @@
 
 ~~~
 <table>
-<thead><tr><th>錯</th><th>對</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
 ```go
-錯誤的程式範例
+不好的程式範例
 ```
 
 </td><td>
 
 ```go
-正確的程式範例
+好的程式範例
 ```
 
 </td></tr>
@@ -52,8 +52,8 @@
   - [指標介面](#指標介面)
   - [接收器和介面](#接收器和介面)
   - [給互斥鎖零值是對的](#給互斥鎖零值是對的)
-  - [在邊界複製Slices跟Maps](#在邊界複製slices跟maps)
-  - [用Defer做整理](#用defer做整理)
+  - [跨界複製Slices跟Maps](#跨界複製Slices跟Maps)
+  - [用defer釋放資源](#用defer釋放資源)
   - [Channel的大小只用1或None](#channel的大小只用1或none)
   - [Enums用1起跳](#start-enums-at-one)
   - [用`time`處理時間](#用time處理時間)
@@ -200,7 +200,7 @@ i = s2Ptr
 `sync.Mutex`和`sync.RWMutex`中使用賦予零值是有效的，所以幾乎從來不會在互斥鎖中用到指標。
 
 <table>
-<thead><tr><th>錯</th><th>對</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -281,18 +281,16 @@ func (m *SMap) Get(k string) string {
 
 </tbody></table>
 
-### Copy Slices and Maps at Boundaries
+### 跨界複製Slices跟Maps
 
-Slices and maps contain pointers to the underlying data so be wary of scenarios
-when they need to be copied.
+Slices跟maps都有包含資料的指標，因此在複製時要特別注意。
 
-#### Receiving Slices and Maps
+#### 接收Slices and Maps
 
-Keep in mind that users can modify a map or slice you received as an argument
-if you store a reference to it.
+切記當map或slice作為參數時，如果有儲存參照則使用者就能做修改。
 
 <table>
-<thead><tr><th>Bad</th> <th>Good</th></tr></thead>
+<thead><tr><th>錯</th> <th>對</th></tr></thead>
 <tbody>
 <tr>
 <td>
@@ -305,7 +303,7 @@ func (d *Driver) SetTrips(trips []Trip) {
 trips := ...
 d1.SetTrips(trips)
 
-// Did you mean to modify d1.trips?
+// 你是想修改d1.trips?
 trips[0] = ...
 ```
 
@@ -321,7 +319,7 @@ func (d *Driver) SetTrips(trips []Trip) {
 trips := ...
 d1.SetTrips(trips)
 
-// We can now modify trips[0] without affecting d1.trips.
+// 這樣就能在不影響d1.trips情況下修改trips[0]了
 trips[0] = ...
 ```
 
@@ -331,13 +329,12 @@ trips[0] = ...
 </tbody>
 </table>
 
-#### Returning Slices and Maps
+#### 返回 Slices and Maps
 
-Similarly, be wary of user modifications to maps or slices exposing internal
-state.
+同理，請注意使用者在公開的map或slice的中修改內部狀態。
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -347,7 +344,7 @@ type Stats struct {
   counters map[string]int
 }
 
-// Snapshot returns the current stats.
+// Snapshot返回目前狀態
 func (s *Stats) Snapshot() map[string]int {
   s.mu.Lock()
   defer s.mu.Unlock()
@@ -355,8 +352,7 @@ func (s *Stats) Snapshot() map[string]int {
   return s.counters
 }
 
-// snapshot is no longer protected by the mutex, so any
-// access to the snapshot is subject to data races.
+// snapshot不再被互斥鎖保護所以任何的存取都會造成資料的競爭
 snapshot := stats.Snapshot()
 ```
 
@@ -379,19 +375,19 @@ func (s *Stats) Snapshot() map[string]int {
   return result
 }
 
-// Snapshot is now a copy.
+// Snapshot現在是副本而非指標
 snapshot := stats.Snapshot()
 ```
 
 </td></tr>
 </tbody></table>
 
-### Defer to Clean Up
+### 用defer釋放資源
 
-Use defer to clean up resources such as files and locks.
+用defer來釋放資源，如檔案或鎖。
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -408,7 +404,7 @@ p.Unlock()
 
 return newCount
 
-// easy to miss unlocks due to multiple returns
+// 在多個返回的情況下直接忽略unlock
 ```
 
 </td><td>
@@ -424,17 +420,14 @@ if p.count < 10 {
 p.count++
 return p.count
 
-// more readable
+// 可讀性提昇
 ```
 
 </td></tr>
 </tbody></table>
 
-Defer has an extremely small overhead and should be avoided only if you can
-prove that your function execution time is in the order of nanoseconds. The
-readability win of using defers is worth the miniscule cost of using them. This
-is especially true for larger methods that have more than simple memory
-accesses, where the other computations are more significant than the `defer`.
+Defer佔用極小的資源，當你在意函式執行時間至毫秒的時候才需要避免使用。defer可以大幅提昇可讀性，而且
+幾乎沒有成本。更多方法在存取記憶體的消耗上大幅高於`defer`呢。
 
 ### Channel Size is One or None
 
@@ -445,7 +438,7 @@ determined, what prevents the channel from filling up under load and blocking
 writers, and what happens when this occurs.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -473,7 +466,7 @@ and a `const` group with `iota`. Since variables have a 0 default value, you
 should usually start your enums on a non-zero value.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -548,7 +541,7 @@ Use [`time.Time`] when dealing with instants of time, and the methods on
   [`time.Time`]: https://golang.org/pkg/time/#Time
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -576,7 +569,7 @@ Use [`time.Duration`] when dealing with periods of time.
   [`time.Duration`]: https://golang.org/pkg/time/#Duration
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -650,7 +643,7 @@ For example, since `encoding/json` does not support `time.Duration`, the unit
 is included in the name of the field.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -719,7 +712,7 @@ If the client needs to detect the error, and you have created a simple error
 using [`errors.New`], use a var for the error.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -773,7 +766,7 @@ more information to it (e.g., it is not a static string), then you should use a
 custom type.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -880,7 +873,7 @@ phrases like "failed to", which state the obvious and pile up as the error
 percolates up through the stack:
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -933,7 +926,7 @@ type. Therefore, always use the "comma ok" idiom.
   [type assertion]: https://golang.org/ref/spec#Type_assertions
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -965,7 +958,7 @@ allow the caller to decide how to handle it.
   [cascading failures]: https://en.wikipedia.org/wiki/Cascading_failure
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -1024,7 +1017,7 @@ Even in tests, prefer `t.Fatal` or `t.FailNow` over panics to ensure that the
 test is marked as failed.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -1066,7 +1059,7 @@ underlying type. Additionally, it includes a convenient `atomic.Bool` type.
   [sync/atomic]: https://golang.org/pkg/sync/atomic/
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -1117,7 +1110,7 @@ Avoid mutating global variables, instead opting for dependency injection.
 This applies to function pointers as well as other kinds of values.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -1213,7 +1206,7 @@ func (l *AbstractList) Remove(e Entity) {
 ```
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -1266,7 +1259,7 @@ would offer the developer more flexibility to change in the future, but still
 leak the detail that the concrete lists use an abstract implementation.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -1330,7 +1323,7 @@ When converting primitives to/from strings, `strconv` is faster than
 `fmt`.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -1370,7 +1363,7 @@ Do not create byte slices from a fixed string repeatedly. Instead, perform the
 conversion once and capture the result.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -1421,7 +1414,7 @@ that the capacity hint is not guaranteed for maps, so adding
 elements may still allocate even if a capacity hint is provided.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -1487,7 +1480,7 @@ violates the above concern by introducing multiple styles into the same code.
 Go supports grouping similar declarations.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -1511,7 +1504,7 @@ import (
 This also applies to constants, variables, and type declarations.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -1556,7 +1549,7 @@ type (
 Only group related declarations. Do not group declarations that are unrelated.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -1592,7 +1585,7 @@ Groups are not limited in where they can be used. For example, you can use them
 inside of functions.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -1633,7 +1626,7 @@ There should be two import groups:
 This is the grouping applied by goimports by default.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -1704,7 +1697,7 @@ In all other scenarios, import aliases should be avoided unless there is a
 direct conflict between imports.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -1748,7 +1741,7 @@ Since functions are grouped by receiver, plain utility functions should appear
 towards the end of the file.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -1796,7 +1789,7 @@ conditions first and returning early or continuing the loop. Reduce the amount
 of code that is nested multiple levels.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -1841,7 +1834,7 @@ If a variable is set in both branches of an if, it can be replaced with a
 single if.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -1872,7 +1865,7 @@ At the top level, use the standard `var` keyword. Do not specify the type,
 unless it is not the same type as the expression.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -1921,7 +1914,7 @@ generic name makes it easy to accidentally use the wrong value in a different
 file.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -1966,7 +1959,7 @@ struct, and there must be an empty line separating embedded fields from regular
 fields.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -1998,7 +1991,7 @@ now enforced by [`go vet`].
   [`go vet`]: https://golang.org/cmd/vet/
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -2038,7 +2031,7 @@ Short variable declarations (`:=`) should be used if a variable is being set to
 some value explicitly.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -2061,7 +2054,7 @@ keyword is used. [Declaring Empty Slices], for example.
   [Declaring Empty Slices]: https://github.com/golang/go/wiki/CodeReviewComments#declaring-empty-slices
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -2100,7 +2093,7 @@ func f(list []int) {
   instead.
 
   <table>
-  <thead><tr><th>Bad</th><th>Good</th></tr></thead>
+  <thead><tr><th>壞</th><th>好</th></tr></thead>
   <tbody>
   <tr><td>
 
@@ -2125,7 +2118,7 @@ func f(list []int) {
   `nil`.
 
   <table>
-  <thead><tr><th>Bad</th><th>Good</th></tr></thead>
+  <thead><tr><th>壞</th><th>好</th></tr></thead>
   <tbody>
   <tr><td>
 
@@ -2150,7 +2143,7 @@ func f(list []int) {
   `make()`.
 
   <table>
-  <thead><tr><th>Bad</th><th>Good</th></tr></thead>
+  <thead><tr><th>壞</th><th>好</th></tr></thead>
   <tbody>
   <tr><td>
 
@@ -2190,7 +2183,7 @@ Where possible, reduce scope of variables. Do not reduce the scope if it
 conflicts with [Reduce Nesting](#reduce-nesting).
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -2216,7 +2209,7 @@ If you need a result of a function call outside of the if, then you should not
 try to reduce the scope.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -2259,7 +2252,7 @@ Naked parameters in function calls can hurt readability. Add C-style comments
 (`/* ... */`) for parameter names when their meaning is not obvious.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -2310,7 +2303,7 @@ which can span multiple lines and include quotes. Use these to avoid
 hand-escaped strings which are much harder to read.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -2333,7 +2326,7 @@ Use `&T{}` instead of `new(T)` when initializing struct references so that it
 is consistent with the struct initialization.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -2364,7 +2357,7 @@ distinct from declaration, and it makes it easy to add size
 hints later if available.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -2409,7 +2402,7 @@ On the other hand, if the map holds a fixed list of elements,
 use map literals to initialize the map.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -2446,7 +2439,7 @@ literal, make them `const` values.
 This helps `go vet` perform static analysis of the format string.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -2498,7 +2491,7 @@ test logic is repetitive.
   [subtests]: https://blog.golang.org/subtests
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -2604,7 +2597,7 @@ that you foresee needing to expand, especially if you already have three or
 more arguments on those functions.
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>壞</th><th>好</th></tr></thead>
 <tbody>
 <tr><td>
 
