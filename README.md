@@ -127,7 +127,7 @@
 
 介面有兩個欄位:
 
-1. 指向特定類型資訊的指標，可以視為**類別**`**。
+1. 指向特定類型資訊的指標，可以視為**型別**`**。
 2. 資料指標。如果儲存的資料是**指標**，則直接儲存。如果存的資料是**值**，則儲存指向該值的指標。
 
 若想用個介面方法來修改本身的資料，則必須用指標來傳。
@@ -197,11 +197,10 @@ i = s2Ptr
 
 ### 給互斥鎖零值是對的
 
-The zero-value of `sync.Mutex` and `sync.RWMutex` is valid, so you almost
-never need a pointer to a mutex.
+`sync.Mutex`和`sync.RWMutex`中使用賦予零值是有效的，所以幾乎從來不會在互斥鎖中用到指標。
 
 <table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<thead><tr><th>錯</th><th>對</th></tr></thead>
 <tbody>
 <tr><td>
 
@@ -220,10 +219,9 @@ mu.Lock()
 </td></tr>
 </tbody></table>
 
-If you use a struct by pointer, then the mutex can be a non-pointer field.
+如果使用結構指標，可以把互斥鎖指定成一個**非指標**的欄位。
 
-Unexported structs that use a mutex to protect fields of the struct may embed
-the mutex.
+使用嵌入互斥體來保護私密結構的互斥體欄位。
 
 <table>
 <tbody>
@@ -231,7 +229,7 @@ the mutex.
 
 ```go
 type smap struct {
-  sync.Mutex // only for unexported types
+  sync.Mutex // 只用在私密型別
 
   data map[string]string
 }
@@ -277,8 +275,8 @@ func (m *SMap) Get(k string) string {
 
 </tr>
 <tr>
-<td>Embed for private types or types that need to implement the Mutex interface.</td>
-<td>For exported types, use a private field.</td>
+<td>嵌入非私密型別或實作互斥鎖界面的型別</td>
+<td>使用私密欄位保護公開的型別</td>
 </tr>
 
 </tbody></table>
