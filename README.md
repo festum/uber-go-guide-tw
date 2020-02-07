@@ -56,7 +56,7 @@
   - [用Defer做整理](#用defer做整理)
   - [Channel的大小只用1或None](#channel的大小只用1或none)
   - [Enums用1起跳](#start-enums-at-one)
-  - [用`"time"`處理時間](#use-time-to-handle-time)
+  - [用`time`處理時間](#用time處理時間)
   - [Error型別](#error型別)
   - [Error包裝](#error包裝)
   - [處理Type Assertion失敗的方式](#處理type-assertion失敗的方式)
@@ -108,7 +108,7 @@
 
 本文件記錄在Uber對Go程式碼遵循的慣用約定。大部分是Go的通用規範，其他延伸部份是參考以下文件:
 
-1. [Go高能]（https://golang.org/doc/effective_go.html）
+1. [高能Go]（https://golang.org/doc/effective_go.html）
 2. [Go常見錯誤指南]（https://github.com/golang/go/wiki/CodeReviewComments）
 
 所有程式碼都用`golint`和`go vet`偵錯並完全通過測試。建議在編輯器綁定自動檢查：
@@ -123,24 +123,20 @@
 
 ### 指標介面
 
-You almost never need a pointer to an interface. You should be passing
-interfaces as values—the underlying data can still be a pointer.
+其實幾乎不需要指標介面這類型的指標。應將介面作為值傳遞，這種類型也可以作為指標。
 
-An interface is two fields:
+介面有兩個欄位:
 
-1. A pointer to some type-specific information. You can think of this as
-  "type."
-2. Data pointer. If the data stored is a pointer, it’s stored directly. If
-  the data stored is a value, then a pointer to the value is stored.
+1. 指向特定類型資訊的指標，可以視為**類別**`**。
+2. 資料指標。如果儲存的資料是**指標**，則直接儲存。如果存的資料是**值**，則儲存指向該值的指標。
 
-If you want interface methods to modify the underlying data, you must use a
-pointer.
+若想用個介面方法來修改本身的資料，則必須用指標來傳。
 
 ### 接收器和介面
 
-Methods with value receivers can be called on pointers as well as values.
+使用接值器的方法既可用值呼叫亦可用指標呼叫。
 
-For example,
+例如:
 
 ```go
 type S struct {
@@ -157,21 +153,20 @@ func (s *S) Write(str string) {
 
 sVals := map[int]S{1: {"A"}}
 
-// You can only call Read using a value
+// 只能用**值**呼叫Read
 sVals[1].Read()
 
-// This will not compile:
+// 這樣無法成功編譯:
 //  sVals[1].Write("test")
 
 sPtrs := map[int]*S{1: {"A"}}
 
-// You can call both Read and Write using a pointer
+// 可用指標呼叫Read跟Write
 sPtrs[1].Read()
 sPtrs[1].Write("test")
 ```
 
-Similarly, an interface can be satisfied by a pointer, even if the method has a
-value receiver.
+同理，介面 ，即使該方法有接值器，也可以通過指標來實作介面。
 
 ```go
 type F interface {
@@ -179,11 +174,9 @@ type F interface {
 }
 
 type S1 struct{}
-
 func (s S1) f() {}
 
 type S2 struct{}
-
 func (s *S2) f() {}
 
 s1Val := S1{}
@@ -196,13 +189,11 @@ i = s1Val
 i = s1Ptr
 i = s2Ptr
 
-// The following doesn't compile, since s2Val is a value, and there is no value receiver for f.
+// 以下也無法成功編譯，因為s2Val是值而f並沒有接值器。
 //   i = s2Val
 ```
 
-Effective Go has a good write up on [Pointers vs. Values].
-
-  [Pointers vs. Values]: https://golang.org/doc/effective_go.html#pointers_vs_values
+[高能Go](https://golang.org/doc/effective_go.html)中有段關於[指標與數值](https://golang.org/doc/effective_go.html#pointers_vs_values)的精闢說明。
 
 ### 給互斥鎖零值是對的
 
